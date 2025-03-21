@@ -39,7 +39,7 @@ Alchemy API Explorer is a comprehensive dashboard for blockchain developers to i
 - Distribution visualization for request patterns
 
 <div align="center">
-  <img src="images/endpoint-analysis.png" alt="Endpoint Analysis" width="700"/>
+  <img src="images/endpoint-analysis.PNG" alt="Endpoint Analysis" width="700"/>
 </div>
 
 ### 📝 Request History
@@ -48,7 +48,7 @@ Alchemy API Explorer is a comprehensive dashboard for blockchain developers to i
 - Quick access to request and response details
 
 <div align="center">
-  <img src="images/recent-requests.png" alt="Recent Requests" width="700"/>
+  <img src="images/recent-requests.PNG" alt="Recent Requests" width="700"/>
 </div>
 
 ## Getting Started
