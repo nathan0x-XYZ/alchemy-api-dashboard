@@ -21,8 +21,8 @@ A modern, interactive dashboard for exploring and testing Alchemy's blockchain A
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/alchemy-api-explorer.git
-cd alchemy-api-explorer
+git clone https://github.com/nathan0x-XYZ/alchemy-api-dashboard.git
+cd alchemy-api-dashboard
 ```
 
 2. Install dependencies

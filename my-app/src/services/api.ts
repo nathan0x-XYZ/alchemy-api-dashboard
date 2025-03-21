@@ -66,10 +66,27 @@ export function addErrorToRecentList(error: ApiError, endpoint: string): void {
   // Add the new error to the beginning of the list and keep only the latest 5 records
   recentErrorsList = [newError, ...recentErrorsList].slice(0, 5);
   console.log('Added error to recent list:', newError);
+  console.log('Updated recent errors list:', recentErrorsList);
   
-  // Trigger event to notify the page to update the error list
+  // Force update the recent errors list in the UI
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('api-error-occurred'));
+    try {
+      // Create and dispatch the event
+      console.log('Dispatching api-error-occurred event');
+      const event = new CustomEvent('api-error-occurred', {
+        detail: { errors: recentErrorsList }
+      });
+      window.dispatchEvent(event);
+      
+      // For debugging purposes, add an event listener to confirm the event was dispatched
+      const debugListener = (e: Event) => {
+        console.log('api-error-occurred event received', (e as CustomEvent).detail);
+        window.removeEventListener('api-error-occurred', debugListener);
+      };
+      window.addEventListener('api-error-occurred', debugListener);
+    } catch (e) {
+      console.error('Error dispatching api-error-occurred event:', e);
+    }
   }
 }
 
@@ -328,6 +345,8 @@ export async function sendApiRequest<T = any>(options: ApiRequestOptions): Promi
       message: error.message || 'An error occurred while making the request',
       details: error,
     };
+    
+    console.log('Adding error to recent list:', apiError, 'endpoint:', options.endpoint);
     addErrorToRecentList(apiError, options.endpoint);
     
     // Add request analytics data
@@ -437,55 +456,21 @@ export async function getRecentErrors(apiKey: string): Promise<{
   details?: string;
 }[]> {
   try {
-    // First, check the locally stored error list
+    console.log('Getting recent errors, current list length:', recentErrorsList.length);
+    
+    // Always return the locally stored error list
     if (recentErrorsList.length > 0) {
+      console.log('Returning local error list:', recentErrorsList);
       return recentErrorsList;
     }
     
-    // If there are no local errors, try to get them from Alchemy API
-    try {
-      const response = await fetch(`https://dashboard.alchemy.com/api/errors?apiKey=${apiKey}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Alchemy-Token': apiKey
-        }
-      });
-
-      console.log('API errors response status:', response.status);
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('API errors data (raw):', JSON.stringify(data, null, 2));
-      
-      // Extract required data from API response
-      if (Array.isArray(data.errors)) {
-        const apiErrors = data.errors.map((error: any) => ({
-          type: error.severity === 'critical' ? 'error' as const : 'warning' as const,
-          message: error.title || error.message || 'Unknown Error',
-          endpoint: error.endpoint || error.path || 'Unknown Endpoint',
-          timestamp: Date.now(),
-          details: error.details || `${error.statusCode || ''} ${error.description || ''}`.trim(),
-        }));
-        
-        // Update the locally stored error list, keeping only the latest 5 records
-        recentErrorsList = [...apiErrors, ...recentErrorsList].slice(0, 5);
-        return recentErrorsList;
-      }
-    } catch (fetchError) {
-      console.error('Fetch error in getRecentErrors:', fetchError);
-      // If the fetch fails, we don't throw an error, but continue using local data
-    }
-    
-    // If there's no error data, return the local error list, or an empty array if it's empty
-    return recentErrorsList.length > 0 ? recentErrorsList : [];
+    // If there are no local errors, return an empty array
+    console.log('No local errors found, returning empty array');
+    return [];
   } catch (error) {
     console.error('Error in getRecentErrors:', error);
-    // If there's an error, return the local error list, or an empty array if it's empty
-    return recentErrorsList.length > 0 ? recentErrorsList : [];
+    // If there's an error, return an empty array
+    return [];
   }
 }
 

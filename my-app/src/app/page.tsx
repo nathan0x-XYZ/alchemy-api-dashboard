@@ -105,11 +105,23 @@ export default function Home() {
       }, 30000);
       
       // Add error event listener
-      const handleApiError = () => {
-        // Reload error data
+      const handleApiError = (event: Event) => {
+        console.log('Error event received in page.tsx');
+        
+        // Check if the event has error details
+        const customEvent = event as CustomEvent;
+        if (customEvent.detail && customEvent.detail.errors) {
+          console.log('Setting errors from event:', customEvent.detail.errors);
+          setRecentErrors(customEvent.detail.errors);
+          return;
+        }
+        
+        // Fallback to API call if no errors in event
         const currentApiKey = getApiKey();
         if (currentApiKey) {
+          console.log('Fetching errors from API');
           getRecentErrors(currentApiKey).then(errors => {
+            console.log('Updated recent errors from API:', errors);
             setRecentErrors(errors);
           }).catch(err => {
             console.error('Error refreshing error list:', err);
@@ -160,11 +172,21 @@ export default function Home() {
         return;
       }
       
+      // First, try to get the recent errors directly from the local list
+      try {
+        const localErrors = await getRecentErrors(key);
+        console.log('Loaded local recent errors:', localErrors);
+        if (localErrors && localErrors.length > 0) {
+          setRecentErrors(localErrors);
+        }
+      } catch (errorsError) {
+        console.error('Error loading local recent errors:', errorsError);
+      }
+      
       // Use Promise.allSettled instead of Promise.all so one request failure doesn't affect others
       const results = await Promise.allSettled([
         getApiStatus(),
-        getApiUsageStats(key),
-        getRecentErrors(key)
+        getApiUsageStats(key)
       ]);
       
       // Process each request result
@@ -195,13 +217,6 @@ export default function Home() {
           avgLatency: 0,
           uptime: 0,
         });
-      }
-      
-      if (results[2].status === 'fulfilled') {
-        setRecentErrors(results[2].value);
-      } else {
-        console.error('Error loading recent errors:', results[2].reason);
-        // Keep existing error list, don't update
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
