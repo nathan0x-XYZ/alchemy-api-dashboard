@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alchemy API Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Light Mode Styles */
+    html.light body {
+      background-color: #f8fafc;
+      color: #000;
+    }
+    
+    /* Dark Mode Styles */
+    html.dark body {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    
+    html.dark .device-frame {
+      border-color: #1e293b;
+      background: #1e293b;
+    }
+    
+    html.dark .gradient-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    
+    html.dark .card {
+      background: #1e293b;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    html.dark .stat-label {
+      color: #94a3b8;
+    }
+    
+    html.dark .btn-secondary {
+      background: #1e293b;
+      color: #818cf8;
+      border-color: #334155;
+    }
+    
+    html.dark .btn-secondary:hover {
+      background: #334155;
+    }
+    
+    html.dark .bg-gray-50,
+    html.dark .bg-gray-100 {
+      background-color: #1e293b;
+    }
+    
+    html.dark .text-gray-500,
+    html.dark .text-gray-600 {
+      color: #94a3b8;
+    }
+    
+    html.dark .border-gray-200 {
+      border-color: #334155;
+    }
+    
+    html.dark select {
+      background-color: #1e293b !important;
+      color: #f8fafc;
+      border-color: #334155;
+    }
+    
+    html.dark .user-icon {
+      background-color: #334155;
+      color: #f8fafc;
+    }
+    
+    html.dark .user-icon svg {
+      stroke: #f8fafc;
+    }
+    
+    .device-frame {
+      width: 375px;
+      height: 812px;
+      border: 1px solid #e2e8f0;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      background: white;
+      transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .page-container {
+      display: flex;
+      gap: 40px;
+      padding: 40px;
+      overflow-x: auto;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      transition: background 0.3s ease;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s ease, background-color 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #64748b;
+      transition: color 0.3s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: white;
+      color: #4f46e5;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 500;
+      transition: all 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+    .api-status {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-healthy {
+      background-color: #10b981;
+    }
+    .status-warning {
+      background-color: #f59e0b;
+    }
+    .status-error {
+      background-color: #ef4444;
+    }
+    .chart-container {
+      height: 180px;
+      width: 100%;
+    }
+    .micro-chart {
+      height: 40px;
+    }
+    
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    html.dark .theme-toggle {
+      background: #1e293b;
+      border-color: #334155;
+    }
+    
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .sun-icon, .moon-icon {
+      width: 24px;
+      height: 24px;
+      transition: opacity 0.3s ease, transform 0.5s ease;
+    }
+    
+    html.light .moon-icon {
+      opacity: 0;
+      transform: scale(0.5);
+      position: absolute;
+    }
+    
+    html.light .sun-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    html.dark .sun-icon {
+      opacity: 0;
+      transform: scale(0.5);
+      position: absolute;
+    }
+    
+    html.dark .moon-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <div class="theme-toggle" id="themeToggle">
+    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+  </div>
+
+  <div class="page-container">
+    <!-- Page 1: Dashboard Overview -->
+    <div class="device-frame">
+      <div class="h-full overflow-auto">
+        <!-- Header -->
+        <div class="gradient-bg p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h1 class="text-xl font-bold">Alchemy Dashboard</h1>
+              <p class="text-sm text-gray-600">Welcome back, Developer</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm user-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- API Status Overview -->
+          <div class="card p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold">API Status</h2>
+              <span class="text-xs text-gray-500">Last updated: 2 min ago</span>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex-1 flex items-center">
+                <span class="api-status status-healthy"></span>
+                <span class="text-sm">Mainnet</span>
+              </div>
+              <div class="flex-1 flex items-center">
+                <span class="api-status status-healthy"></span>
+                <span class="text-sm">Sepolia</span>
+              </div>
+              <div class="flex-1 flex items-center">
+                <span class="api-status status-warning"></span>
+                <span class="text-sm">Arbitrum</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6">
+          <!-- Usage Stats -->
+          <div class="mb-6">
+            <h2 class="font-semibold mb-3">API Usage</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="card p-4">
+                <div class="stat-value">85%</div>
+                <div class="stat-label">Monthly Quota</div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                  <div class="bg-indigo-500 h-2 rounded-full" style="width: 85%"></div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="stat-value">1.2M</div>
+                <div class="stat-label">API Calls</div>
+                <div class="micro-chart mt-2 text-indigo-500">
+                  ▁▃▅▂▇▃▅▂
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="stat-value">24ms</div>
+                <div class="stat-label">Avg. Latency</div>
+                <div class="micro-chart mt-2 text-green-500">
+                  ▁▂▁▃▂▁▂▁
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="stat-value">99.9%</div>
+                <div class="stat-label">Uptime</div>
+                <div class="micro-chart mt-2 text-green-500">
+                  ▇▇▇▇▆▇▇▇
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Errors -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold">Recent Errors</h2>
+              <a href="#" class="text-indigo-600 text-sm">View All</a>
+            </div>
+            <div class="card p-4 mb-3">
+              <div class="flex items-start gap-3">
+                <div class="p-2 rounded-full bg-red-50">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <h3 class="font-medium text-sm">Rate Limit Exceeded</h3>
+                    <span class="text-xs text-gray-500">10:23 AM</span>
+                  </div>
+                  <p class="text-xs text-gray-600 mt-1">Too many requests (429) on /getNFTs endpoint</p>
+                </div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="flex items-start gap-3">
+                <div class="p-2 rounded-full bg-yellow-50">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <h3 class="font-medium text-sm">Slow Response Time</h3>
+                    <span class="text-xs text-gray-500">Yesterday</span>
+                  </div>
+                  <p class="text-xs text-gray-600 mt-1">Request timeout (504) on /getAssetTransfers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div>
+            <h2 class="font-semibold mb-3">Quick Actions</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <button class="btn-primary flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                </svg>
+                New API Key
+              </button>
+              <button class="btn-secondary flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                API History
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Page 2: Debug Console -->
+    <div class="device-frame">
+      <div class="h-full overflow-auto">
+        <!-- Header -->
+        <div class="gradient-bg p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h1 class="text-xl font-bold">Debug Console</h1>
+              <p class="text-sm text-gray-600">Troubleshoot API issues</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm user-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Request Builder -->
+          <div class="card p-4 mb-4">
+            <h2 class="font-semibold mb-3">Request Builder</h2>
+            <div class="mb-3">
+              <label class="block text-sm text-gray-600 mb-1">API Endpoint</label>
+              <select class="w-full p-3 rounded-lg border border-gray-200 text-sm bg-white">
+                <option>getNFTs</option>
+                <option>getAssetTransfers</option>
+                <option>getTokenBalances</option>
+                <option>getTransactionReceipt</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="block text-sm text-gray-600 mb-1">Parameters</label>
+              <div class="p-3 rounded-lg border border-gray-200 text-sm font-mono h-24 overflow-auto">
+{
+  "owner": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  "pageSize": 100,
+  "excludeFilters": ["SPAM"]
+}
+              </div>
+            </div>
+            <button class="btn-primary w-full">Send Request</button>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6">
+          <!-- Response Section -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold">Response</h2>
+              <div class="flex items-center">
+                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">200 OK</span>
+                <span class="text-xs text-gray-500 ml-2">124ms</span>
+              </div>
+            </div>
+            <div class="card p-4 mb-3">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-medium">Response Headers</h3>
+                <button class="text-xs text-indigo-600">Copy</button>
+              </div>
+              <div class="bg-gray-50 p-3 rounded text-xs font-mono overflow-auto h-16">
+Content-Type: application/json
+X-Request-Id: 7b92a3e1-5c0d-4f3a-b0d2-8d6f5e7a1c2b
+Cache-Control: no-cache
+X-RateLimit-Limit: 500
+X-RateLimit-Remaining: 487
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-medium">Response Body</h3>
+                <div>
+                  <button class="text-xs text-indigo-600 mr-2">Format</button>
+                  <button class="text-xs text-indigo-600">Copy</button>
+                </div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded text-xs font-mono overflow-auto h-48">
+{
+  "ownedNfts": [
+    {
+      "contract": {
+        "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+      },
+      "id": {
+        "tokenId": "0x0000000000000000000000000000000000000000000000000000000000001234",
+        "tokenMetadata": {
+          "tokenType": "ERC721"
+        }
+      },
+      "balance": "1",
+      "title": "Bored Ape Yacht Club",
+      "description": "The Bored Ape Yacht Club is a collection of 10,000 unique Bored Ape NFTs.",
+      "tokenUri": {
+        "raw": "ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1234",
+        "gateway": "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1234"
+      },
+      "media": [
+        {
+          "raw": "ipfs://QmPbxeGcXhYQQNgsC6a36dDyYUcHgMLnGKnF8pVFmGsvqi",
+          "gateway": "https://ipfs.io/ipfs/QmPbxeGcXhYQQNgsC6a36dDyYUcHgMLnGKnF8pVFmGsvqi"
+        }
+      ],
+      "metadata": {
+        "name": "Bored Ape #1234",
+        "description": "A bored ape with rare traits",
+        "image": "ipfs://QmPbxeGcXhYQQNgsC6a36dDyYUcHgMLnGKnF8pVFmGsvqi",
+        "attributes": [
+          {
+            "trait_type": "Background",
+            "value": "Blue"
+          },
+          {
+            "trait_type": "Fur",
+            "value": "Golden Brown"
+          }
+        ]
+      },
+      "timeLastUpdated": "2023-03-03T12:00:06.563Z"
+    }
+  ],
+  "totalCount": 1,
+  "blockHash": "0x183a1a1627ef92e403ec97a6a09e31f35b2523648cf89d5721661a10c946f141"
+}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Error Handling Guide -->
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold">Common Error Solutions</h2>
+              <a href="#" class="text-indigo-600 text-sm">View All</a>
+            </div>
+            <div class="card p-4 mb-3">
+              <h3 class="text-sm font-medium mb-2">429 - Rate Limit Exceeded</h3>
+              <p class="text-xs text-gray-600">Implement exponential backoff retry strategy when encountering 429 errors. Consider batching requests or caching frequently used data.</p>
+              <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+// Example backoff implementation
+function fetchWithRetry(url, options, retries = 3, backoff = 300) {
+  return fetch(url, options)
+    .catch(error => {
+      if (retries > 0) {
+        return new Promise(resolve => {
+          setTimeout(() => resolve(
+            fetchWithRetry(url, options, retries - 1, backoff * 2)
+          ), backoff);
+        });
+      }
+      throw error;
+    });
+}
+              </div>
+            </div>
+            <div class="card p-4">
+              <h3 class="text-sm font-medium mb-2">400 - Invalid Parameters</h3>
+              <p class="text-xs text-gray-600">Check parameter format and requirements. Ensure addresses are valid and properly formatted with 0x prefix.</p>
+              <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+// Validate Ethereum address
+function isValidAddress(address) {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Theme Toggle Functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    
+    // Check for saved theme preference or use system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      html.className = savedTheme;
+    } else {
+      // Check system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        html.className = 'dark';
+      } else {
+        html.className = 'light';
+      }
+    }
+    
+    // Toggle theme when button is clicked
+    themeToggle.addEventListener('click', () => {
+      if (html.className === 'light') {
+        html.className = 'dark';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.className = 'light';
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+</body>
+</html>
